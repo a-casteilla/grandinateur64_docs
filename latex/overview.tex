@@ -1,0 +1,83 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper, portrait, margin=0.8in]{geometry}
+\usepackage{graphicx}
+
+\author{Aurélien Casteilla}
+\date{26-04-2021}
+\title{Spiderchip64}
+
+\begin{document}
+\pagenumbering{gobble}
+\maketitle
+\begin{figure}[h!]
+    \includegraphics[width=\linewidth]{mascotte.png}
+\end{figure}
+\newpage
+
+\paragraph{}
+        Spiderchip64 is a 64 bits little endian ISA. This ISA tries to apply
+        the KISS principle and also tries to respect the Popek and Goldberg
+        virtualization requirement. Also, this CPU will include atomic memory
+        operation for a multi-core version. So Spiderchip64 is a RISC ISA.
+        Spiderchip64 has a 64 bits-wide data bus, a 64 bits-wide address bus,
+        two sets of 31 64 bits-wide registers for a total of 47 registers, plus
+        a zero register.  There is also a status register and a saved status
+        register. One set of register is used by the user's program and the
+        other set is reserved for fast interrupt handling or for the supervisor
+        usage. The instruction word is 32 bit wide.
+        \setcounter{secnumdepth}{-1}
+\section{Summary}
+\begin{itemize}
+    \item RISC ISA
+    \item applies the KISS principle
+    \item respects the Popek and Goldberg virtualization requirement
+    \item have atomic memory operations
+    \item 64 bits or less address bus (more than you will ever need (16 EiB))
+    \item 64 bits data bus
+    \item 64 bits registers
+    \item 32 bits instruction word
+    \item 15 registers shared between the user and the supervisor
+    \item 16 registers are user specific and 16 registers are supervisor specific 
+    \item 32 registers visible at the same time (including a zero register)
+    \item one address space for everything (Von Neumann architecture with I/O mapped in memory)
+    \item "user" and "supervisor" mode
+    \item one instruction per clock cycle if the architecture is pipelined    
+	   (excluding memory instructions especially if the memory is slow)
+    \item SIMD instructions on 2 words, 4 half-words or 8 bytes
+    \item free and open source
+\end{itemize}
+\section{Notes :}
+\begin{itemize}
+    \item This ISA is intended to be implemented the first time on a FPGA
+        development board (Arduino MKR Vidor 4000, with an Intel Cyclone 10)
+
+    \item I am aware that Intel Quartus is not free software. I am searching a
+        FOSS FPGA "compiler" and FOSS-friendly FPGA board
+
+    \item This is just an ISA for the CPU part of a computer. So it doesn't
+        have and doesn't specify a MMU, a FPU, a GPU, a cache, a PIC, or an I/O
+        controller. However, some of these elements will be on the FPGA SoC.
+
+    \item In the first version of this ISA, there won't be double instructions.
+
+\end{itemize}
+\section{Glossary of the acronyms :}
+
+\paragraph{CPU : }Central Processing Unit
+\paragraph{FPGA : }Field Programmable Gate Array
+\paragraph{FPU : }Floating Point Unit
+\paragraph{FOSS : }Free and Open Sourced Software
+\paragraph{GPU : }Graphical Processing Unit
+\paragraph{I/O : }Input / Output
+\paragraph{ISA : }Instruction Set Architecture
+\paragraph{KISS : }Keep It Simple Stupid
+\paragraph{MIMD : }Multiple Instruction Multiple Data 
+\paragraph{MMU : }Memory Management Unit
+\paragraph{PIC : }Programmable Interrupt Controller
+\paragraph{RISC : }Reduced Instruction Set Computing
+\paragraph{SoC : }System On Chip
+
+\section{}
+Cyclone 10 is a trademark owned by Intel
+
+\end{document}

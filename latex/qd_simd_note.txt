@@ -1,0 +1,18 @@
+from DW:
+    to W    ASL Ry, Rx, #32
+            ORR Ry, Rx
+    to HW   ASL Ry, Rx, #32
+            ORR Ry, Rx, Ry
+            ASL Ry, R
+
+    to B
+
+from W:
+    to HW   ASL Ry, Rx, #16
+            ORR Ry, Rx
+    to B    ASL Ry, Rx, #16
+            ORR Ry, Ry, Rx
+            ORR Ry, Ry << 8
+
+from HW:
+    to B    ORR Ry, Rx, Rx << 8

@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, portrait, margin=0.8in]{geometry}
+%\usepackage[T1]{inputenc}
+\usepackage{multirow}
+\usepackage{graphicx}
+
+\author{Aurélien Casteilla}
+\title{Simple runtime environnement \\[1ex] \large Version 0.1}
+\date{14-05-2021}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\section{Overview}
+The Simple runtime environnement (or SRE) is a machine with a bare Spiderchip64
+CPU, 640 Kibibytes of RAM, 320 Kibibytes of ROM and an ASCII or ANSI terminal.
+The user and the supervisor have almost the same rights except that only the
+supervisor can access the terminal. The ROM is in the high memory and the RAM
+is in the low memory. This computer is only intended for CPU testing purpose.
+
+\section{Memory map}
+
+The address bus is 20 bits wide, so there is only 1 mebiobyte of address space.
+
+\begin{table}[h!]
+    \begin{center}
+        \caption{Address map}
+        \label{tab:addmap}
+        \begin{tabular}{|r|c|l|}
+            \hline
+            Address range & Memory type & Description \\
+            \hline
+            \texttt{\$00000 - \$00014} & RAM & Interrupt vectors \\
+            \hline
+            \texttt{\$00010 - \$08000} & RAM & Memory area available for customised
+            interrupt handler \\
+            \hline
+            \texttt{\$08000 - \$a0000} & RAM & Free space \\
+            \hline
+            \texttt{\$a0000 - \$a0008} & Output & Terminal output (character
+            at the byte \texttt{\$a0000})\\
+            \hline
+            \texttt{\$a0008 - \$a0010} & Input & Terminal input (character at the byte
+            \texttt{\$a0008}) \\ 
+            \hline
+            \texttt{\$a0010 - \$b0000} & Unpopulated & Crash area \\
+            \hline
+            \texttt{\$b0000 - \$f8000} & ROM & Program and initial data \\
+            \hline
+            \texttt{\$f8000 - \$fffff} & ROM & Memory area available for the reset
+            routine and \\
+            & & for the default interrupt handlers \\
+            \hline
+            \texttt{\$ffffc - \$fffff} & ROM & Reset vector \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+\section{Terminal}
+
+A character is written on the terminal when a byte is written to the address
+\texttt{\$A0000}. \newline
+A character is read from the terminal when a byte is read from the
+address \texttt{\$A0008}. \newline
+When a character is available an IRQ happen. The IRQ is released when the
+character is read from the terminal.
+
+\section{Interrupts}
+\subsection{Reset}
+This computer does a reset only on power up.
+\subsection{Memory error}
+Any write operation on the ROM leads a memory error. Any access between address
+\texttt{\$A0010} and \texttt{\$AFFFF} will do also a memory error. If the user tries to access
+addresses between \texttt{\$A0000} and \texttt{\$A000F}, a memory error will occure as well.
+\subsection{Address error}
+An address error happen when a non-aligned address is accessed.
+\subsection{IRQ}
+An IRQ happen when a character arrived from the terminal. The IRQ is cleared
+when a read operation happen on the terminal input address.
+
+\end{document}

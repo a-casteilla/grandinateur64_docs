@@ -1,0 +1,160 @@
+\contentsline {section}{\numberline {1}Register file}{1}{}%
+\contentsline {subsection}{\numberline {1.1}Regular registers}{1}{}%
+\contentsline {subsection}{\numberline {1.2}Status register and conditional code register}{2}{}%
+\contentsline {section}{\numberline {2}Interrupts}{4}{}%
+\contentsline {paragraph}{For all interrupts : }{4}{}%
+\contentsline {section}{\numberline {3}Addressing modes}{5}{}%
+\contentsline {subsection}{\numberline {3.1}Memory operations}{5}{}%
+\contentsline {paragraph}{direct mode : (d)}{5}{}%
+\contentsline {paragraph}{index mode : (i)}{5}{}%
+\contentsline {paragraph}{base index shifted mode : (bi) }{5}{}%
+\contentsline {paragraph}{auto-indexing mode : (ai) }{5}{}%
+\contentsline {subparagraph}{Rx, Ry+}{5}{}%
+\contentsline {subparagraph}{Rx, Ry-}{5}{}%
+\contentsline {subparagraph}{Rx, +Ry}{5}{}%
+\contentsline {subparagraph}{Rx, -Ry}{5}{}%
+\contentsline {paragraph}{Important notes : }{5}{}%
+\contentsline {subsection}{\numberline {3.2}ALU operations}{5}{}%
+\contentsline {paragraph}{register mode : (rr)}{5}{}%
+\contentsline {paragraph}{immediate mode : (rim)}{5}{}%
+\contentsline {subsection}{\numberline {3.3}Branch operations}{5}{}%
+\contentsline {paragraph}{relative to register mode : (r)}{5}{}%
+\contentsline {section}{\numberline {4}Instruction set}{6}{}%
+\contentsline {subsection}{\numberline {4.1}Memory operations}{6}{}%
+\contentsline {paragraph}{LDW}{6}{}%
+\contentsline {paragraph}{LWS}{6}{}%
+\contentsline {paragraph}{LWU}{6}{}%
+\contentsline {paragraph}{LHS}{6}{}%
+\contentsline {paragraph}{LHU}{6}{}%
+\contentsline {paragraph}{LBS}{6}{}%
+\contentsline {paragraph}{LBU}{6}{}%
+\contentsline {paragraph}{STD}{6}{}%
+\contentsline {paragraph}{STW}{6}{}%
+\contentsline {paragraph}{STH}{6}{}%
+\contentsline {paragraph}{STB}{6}{}%
+\contentsline {paragraph}{Notes : }{6}{}%
+\contentsline {subsection}{\numberline {4.2}Atomic memory operations}{7}{}%
+\contentsline {paragraph}{LLD}{7}{}%
+\contentsline {paragraph}{SCD}{7}{}%
+\contentsline {paragraph}{Notes : }{7}{}%
+\contentsline {subsection}{\numberline {4.3}Generic ALU operations}{7}{}%
+\contentsline {paragraph}{ADD}{7}{}%
+\contentsline {paragraph}{SUB}{7}{}%
+\contentsline {paragraph}{AND}{7}{}%
+\contentsline {paragraph}{ORR}{7}{}%
+\contentsline {paragraph}{EOR}{7}{}%
+\contentsline {paragraph}{ASL / LSL}{7}{}%
+\contentsline {paragraph}{ASR}{7}{}%
+\contentsline {paragraph}{LSR}{8}{}%
+\contentsline {paragraph}{ROL}{8}{}%
+\contentsline {paragraph}{ROR}{8}{}%
+\contentsline {paragraph}{MUL}{8}{}%
+\contentsline {paragraph}{Notes : }{8}{}%
+\contentsline {subsection}{\numberline {4.4}Carried ALU operations}{8}{}%
+\contentsline {paragraph}{ADC}{8}{}%
+\contentsline {paragraph}{SBC}{8}{}%
+\contentsline {paragraph}{RLC}{8}{}%
+\contentsline {paragraph}{RRC}{8}{}%
+\contentsline {paragraph}{Notes : }{8}{}%
+\contentsline {subsection}{\numberline {4.5}SIMD ALU operations}{9}{}%
+\contentsline {subsubsection}{\numberline {4.5.1}SIMD add}{9}{}%
+\contentsline {paragraph}{ADDD}{9}{}%
+\contentsline {paragraph}{ADDW}{9}{}%
+\contentsline {paragraph}{ADDH}{9}{}%
+\contentsline {paragraph}{ADDB}{9}{}%
+\contentsline {subsubsection}{\numberline {4.5.2}SIMD subtract}{9}{}%
+\contentsline {paragraph}{SUBD}{9}{}%
+\contentsline {paragraph}{SUBW}{9}{}%
+\contentsline {paragraph}{SUBH}{9}{}%
+\contentsline {paragraph}{SUBB}{9}{}%
+\contentsline {subsubsection}{\numberline {4.5.3}SIMD arithmetical or logical shift left}{9}{}%
+\contentsline {paragraph}{ASLD}{9}{}%
+\contentsline {paragraph}{ASLW}{9}{}%
+\contentsline {paragraph}{ASLH}{9}{}%
+\contentsline {paragraph}{ASLB}{9}{}%
+\contentsline {subsubsection}{\numberline {4.5.4}SIMD arithmetical shift right}{10}{}%
+\contentsline {paragraph}{ASRD}{10}{}%
+\contentsline {paragraph}{ASRW}{10}{}%
+\contentsline {paragraph}{ASRH}{10}{}%
+\contentsline {paragraph}{ASRB}{10}{}%
+\contentsline {subsubsection}{\numberline {4.5.5}SIMD logical shift right}{10}{}%
+\contentsline {paragraph}{LSRD}{10}{}%
+\contentsline {paragraph}{LSRW}{10}{}%
+\contentsline {paragraph}{LSRH}{10}{}%
+\contentsline {paragraph}{LSRB}{10}{}%
+\contentsline {subsubsection}{\numberline {4.5.6}SIMD rotate left}{10}{}%
+\contentsline {paragraph}{ROLD}{10}{}%
+\contentsline {paragraph}{ROLW}{10}{}%
+\contentsline {paragraph}{ROLH}{10}{}%
+\contentsline {paragraph}{ROLB}{10}{}%
+\contentsline {subsubsection}{\numberline {4.5.7}SIMD rotate right}{10}{}%
+\contentsline {paragraph}{RORD}{10}{}%
+\contentsline {paragraph}{RORW}{10}{}%
+\contentsline {paragraph}{RORH}{11}{}%
+\contentsline {paragraph}{RORB}{11}{}%
+\contentsline {subsubsection}{\numberline {4.5.8}SIMD sum}{11}{}%
+\contentsline {paragraph}{SUMW}{11}{}%
+\contentsline {paragraph}{SUMH}{11}{}%
+\contentsline {paragraph}{SUMB}{11}{}%
+\contentsline {paragraph}{Notes : }{11}{}%
+\contentsline {subsection}{\numberline {4.6}Branch instructions}{11}{}%
+\contentsline {paragraph}{BAL}{11}{}%
+\contentsline {paragraph}{BEQ}{11}{}%
+\contentsline {paragraph}{BNE}{11}{}%
+\contentsline {paragraph}{BMI}{11}{}%
+\contentsline {paragraph}{BPL}{11}{}%
+\contentsline {paragraph}{BVS}{11}{}%
+\contentsline {paragraph}{BVC}{11}{}%
+\contentsline {paragraph}{BCS / BHQ}{11}{}%
+\contentsline {paragraph}{BCC / BLO}{11}{}%
+\contentsline {paragraph}{BHI}{12}{}%
+\contentsline {paragraph}{BLQ}{12}{}%
+\contentsline {paragraph}{BGT}{12}{}%
+\contentsline {paragraph}{BLE}{12}{}%
+\contentsline {paragraph}{BGE}{12}{}%
+\contentsline {paragraph}{BLT}{12}{}%
+\contentsline {paragraph}{BLK}{12}{}%
+\contentsline {subsection}{\numberline {4.7}Conditional codes instructions}{12}{}%
+\contentsline {paragraph}{TCR}{12}{}%
+\contentsline {paragraph}{TRC}{12}{}%
+\contentsline {subsection}{\numberline {4.8}Status instructions (privileged)}{12}{}%
+\contentsline {paragraph}{TSR}{12}{}%
+\contentsline {paragraph}{TRS}{12}{}%
+\contentsline {paragraph}{RTI}{12}{}%
+\contentsline {subsection}{\numberline {4.9}Software interrupts}{12}{}%
+\contentsline {paragraph}{SYS}{12}{}%
+\contentsline {paragraph}{ILG}{13}{}%
+\contentsline {subsection}{\numberline {4.10}conditional prefix}{13}{}%
+\contentsline {paragraph}{AL.}{13}{}%
+\contentsline {paragraph}{EQ.}{13}{}%
+\contentsline {paragraph}{NE.}{13}{}%
+\contentsline {paragraph}{MI.}{13}{}%
+\contentsline {paragraph}{PL.}{13}{}%
+\contentsline {paragraph}{VS.}{13}{}%
+\contentsline {paragraph}{VC.}{13}{}%
+\contentsline {paragraph}{CS. / HQ.}{13}{}%
+\contentsline {paragraph}{CC. / LO.}{13}{}%
+\contentsline {paragraph}{HI.}{13}{}%
+\contentsline {paragraph}{LQ.}{13}{}%
+\contentsline {paragraph}{GT.}{13}{}%
+\contentsline {paragraph}{LE.}{13}{}%
+\contentsline {paragraph}{GE.}{13}{}%
+\contentsline {paragraph}{LT.}{13}{}%
+\contentsline {subsection}{\numberline {4.11}Meta-instructions}{14}{}%
+\contentsline {paragraph}{MOV}{14}{}%
+\contentsline {paragraph}{MVN}{14}{}%
+\contentsline {paragraph}{NOT}{14}{}%
+\contentsline {paragraph}{CMP}{14}{}%
+\contentsline {paragraph}{CMN}{14}{}%
+\contentsline {paragraph}{BIT}{14}{}%
+\contentsline {paragraph}{NOP}{14}{}%
+\contentsline {paragraph}{PSH}{14}{}%
+\contentsline {paragraph}{PLL}{14}{}%
+\contentsline {paragraph}{RTS}{14}{}%
+\contentsline {paragraph}{Note : }{14}{}%
+\contentsline {section}{\numberline {5}Assembler syntax}{15}{}%
+\contentsline {subsection}{\numberline {5.1}Memory operations}{15}{}%
+\contentsline {subsection}{\numberline {5.2}ALU operations}{15}{}%
+\contentsline {subsection}{\numberline {5.3}Branch operations}{15}{}%
+\contentsline {subsection}{\numberline {5.4}Status instructions and conditional codes instructions}{15}{}%
+\contentsline {subsection}{\numberline {5.5}Software interrupts}{15}{}%

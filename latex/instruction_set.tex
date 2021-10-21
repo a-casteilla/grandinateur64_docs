@@ -1,0 +1,805 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper, portrait, margin=0.8in]{geometry}
+%\usepackage[T1]{inputenc}
+\usepackage{multirow}
+\usepackage{graphicx}
+
+\author{Aurélien Casteilla}
+\title{Instruction set architecture of Spiderchip64 \\[1ex] \large Version 0.1}
+\date{14-05-2021}
+
+\begin{document}
+
+
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\hbadness=10000
+
+\pagenumbering{gobble}
+\maketitle
+\begin{figure}[h!]
+    \includegraphics[width=\linewidth]{mascotte.png}
+\end{figure}
+\newpage
+
+\tableofcontents
+\newpage
+
+\pagenumbering{arabic}
+\section{Register file}
+\subsection{Regular registers}
+
+%   \paragraph{User register set :} \newline
+\begin{table}[h!]
+    \begin{center}
+        \caption{User register set}
+        \label{tab:urs}
+        \begin{tabular}{|l|l|l|l|l|l|l|l|}
+            \hline
+            R0  & R1    & R2    & R3    & R4    & R5    & R6    & R7 \\
+            \hline
+            R8    & R9    & R10   & R11   & R12   & R13   & R14  & PC \\
+            \hline
+            R16  & R17    & R18    & R19    & R20    & R21    & R22    & R23 \\
+            \hline
+            R24    & R25    & R26   & R27   & R28   & R29   & R30   & LR \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+%   \paragraph{Interrupt register set :} \newline
+\begin{table}[h!]
+    \begin{center}
+        \caption{Interrupt register set}
+        \label{tab:irs}
+        \begin{tabular}{|l|l|l|l|l|l|l|l|}
+            \hline
+            R0  & R1    & R2    & R3    & R4    & R5    & R6    & R7 \\
+            \hline
+            R8    & R9    & R10   & R11   & R12   & R13   & R14  & PC \\
+            \hline
+            RLIi & R17i    & R18i    & R19i    & R20i    & R21i    & R22i    & R23i \\
+            \hline
+            R24i    & R25i    & R26i   & R27i   & R28i   & R29i   &  R30i  & LRi \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+R0 is hard-wired to zero : loading a value from it returns 0,
+storing a value in it does nothing. \newline
+RLIi : Last instruction executed before the interrupt\newline
+LR : link register\newline
+LRi : supervisor link register\newline
+PC : program counter, always point the next instruction to be executed\newline
+Registers R0 to R14 and PC are shared between the sets. \newline
+All registers are 64 bit-wide\newline
+
+\newpage
+\subsection{Status register and conditional code register}
+The whole status register is directly accessible only in supervisor mode, with the instructions TRS and TSR.
+In user mode, the current condition codes can be accessed with the instructions TRC and TCR.
+The condition codes bits are bit 7 to bit 0. The condition codes bits can be used to perform conditional
+operations, such as branches. 
+All interrupts move the current status register to the saved status register. And RTI moves back the saved status
+to the current status. RTI can be executed only in supervisor mode. 
+
+\begin{table}[h!]
+    \begin{center}
+        \caption{Current status register and saved status register}
+        \label{tab:status}
+        \begin{tabular}{|c|c|c|l|}
+            \hline
+            & bit No. & name & description \\
+            \hline
+            unused & 63-32 & - & \\
+            \hline
+            \multirow{16}{*}{saved status} & 31 & R & interrupt register set selected \\
+            & 30 &I& interrupt request disabled \\
+            & 29 &D& map directly the memory\\
+            & 28 &W& wait interrupt \\
+            & 27 &P&privileged instructions allowed \\
+            & 26 &-& \\
+            & 25 &-& \\
+            & 24 &-& \\
+            & 23 &N&negative \\
+            & 22 &V&overflow \\
+            & 21 &-& \\
+            & 20 &H&higher than (H = C./Z) \\
+            & 19 &g&greater than or equal (g = /N./V + N.V) \\
+            & 18 &G&greater than (G = /N./V./Z + N.V./Z) \\
+            & 17 &Z&zero \\
+            & 16 &C&carry \\
+            \hline
+            \multirow{8}{*}{current status}& 15 &R& interrupt register set selected \\
+            & 14 &I& interrupt request disabled \\
+            & 13 &D& map directly the memory\\
+            & 12 &W& wait interrupt \\
+            & 11 &P&privileged instructions allowed \\
+            & 10 &-& \\
+            & 9 &-& \\
+            & 8 &-& \\
+            \hline
+            \multirow{8}{*}{current status and conditional codes} & 7 &N&negative \\
+            & 6 &V&overflow \\
+            & 5 &-& \\
+            & 4 &H&higher than (H = C./Z) \\
+            & 3 &g&greater than or equal (g = /N./V + N.V) \\
+            & 2 &G&greater than (G = /N./V./Z + N.V./Z) \\
+            & 1 &Z&zero \\
+            & 0 &C&carry \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+\begin{itemize}
+    \item R : if set, R14i to LRi are used instead of R14 to LR
+    \item I : if set, interrupt requests are disabled 
+    \item D : if set, the MMU doesn't translate the addresses
+    \item W : if set, the CPU waits until an interrupt is received. If I is
+        set, the processor continues the execution without affecting the PC nor
+        the status (except W which is cleared). Otherwise, it performs a
+        regular interrupt.
+    \item P : if set, the CPU can perform privileged instructions and memory access
+    \item N : this status is set if the result of an instruction is negative.
+    \item V : this status is set if a signed overflow occurs. A signed overflow has occurred
+        when the result has not the expected sign.
+    \item H : this status is set if the unsigned result is strictly higher than zero in case of
+        a subtraction
+    \item g : this status is set for a signed subtraction if the first operand is greater than
+        or equal the second operand. 
+    \item G : this status is set for a signed subtraction if the first operand is strictly 
+        greater than the second operand. 
+    \item Z : this status is set when the result is zero.
+    \item C : this status is set when an addition has an unsigned result that overflows. In 
+        case of a subtraction, this status is set if the unsigned result is higher than or equal 
+        than zero. 
+\end{itemize}
+
+\newpage
+\section{Interrupts}
+
+\paragraph{For all interrupts : }
+The CPU starts executing instruction at a predefined address, swaps the register set, 
+and saves  the current PC in LRi, saves the current status to the saved status and 
+dumps the last instruction tried into the RLIi register.
+The status bits D, I, R and P are set, and W is cleared. An interrupt servicing routine has to
+be quitted with the instruction RTI to restore the PC and the saved status.
+For multicore systems, \$100 multiplied by the core number is added to the jump address.
+The highest priority number is the least prioritised interrupt.
+
+\begin{table}[h!]
+    \begin{center}
+        \caption{interrupt table}
+        \label{tab:int}
+        \begin{tabular}{|l|c|c|p{30mm}|p{70mm}|}
+            \hline
+            name & jump address & Priority & short description & long description \\ 
+            \hline
+            Reset & \texttt{\$FFFFFFFF FFFFFFFC} & 0 & Reset & This interrupt performs a cold reset of the system.
+            This interrupt has to be triggered on power on. After the reset,
+            only the core 0 is started. For the other cores, the status and the
+            PC are initialised, but the W status is left set.\\
+            \hline
+            ME    & \texttt{\$00000000 00000000} & 2 & memory error &
+            This interrupt is triggered when the MMU detects an error or a privilege violation.
+            It aborts the current instruction.
+            The faulty instruction is dumped into RLIi. \newline
+            \textbf {Warning :} we assume that no memory error will occur during an interrupt servicing
+            routine. However, if it happens anyway, the CPU will overwrite the LRi. (But if a memory error
+            happen in an ISR, your system is probably already really f**ked up) \\
+            \hline
+            AE   & \texttt{\$00000000 00000004} & 3 & Address error & 
+            This interrupt happen when the processor tries to access an address not aligned.
+            It aborts the current instruction.
+            The faulty instruction is dumped into RLIi. \newline
+            \textbf{Warning :} we assume that no address error will occur during an interrupt servicing
+            routine. However, if it happens anyway, the CPU will overwrite the LRi. 
+            Thus, address error should be ABSOLUTELY avoided in an ISR. \\
+            \hline
+            ILG   & \texttt{\$00000000 00000008} & 4 & Illegal instruction &This interrupt happen when an undefined 
+            instruction is executed or privileged instruction in user mode is executed
+            The faulty instruction is dumped into RLIi. \\
+            \hline
+            SYS   & \texttt{\$00000000 0000000C} & 4 & System call & This interrupt happen when the SYS opcode is executed. 
+            The SYS opcode is stored in the RLIi. \\
+            \hline
+            IRQ   & \texttt{\$00000000 00000010} & 1 & Interrupt request&This interrupt is the general 
+            purpose hardware interrupt. This interrupt is maskable with the status I.
+            The last instruction executed is dumped in the RLIi. \\
+            \hline
+        \end{tabular}
+    \end{center}
+\end{table}
+
+\newpage
+\section{Addressing modes}
+
+\subsection{Memory operations}
+In this section EA stands for effective address
+
+\paragraph{direct mode : (d)}
+
+offset (15 bits signed --- 32 KiB range)
+
+EA = offset
+
+\paragraph{index mode : (i)}
+
+Rx, offset (10 bits signed --- 1 KiB range)
+
+EA = Rx + offset
+
+\paragraph{base index shifted mode : (bi) }
+
+Rx, Ry \textless\textless shift (shift amount on 5 bits)
+
+EA = Rx + Ry \textless\textless shift
+
+\paragraph{auto-indexing mode : (ai) }
+
+\subparagraph{Rx, Ry+}
+
+Ry += data\_size
+
+\subparagraph{Rx, Ry-}
+
+EA = Rx + Ry then Ry -= data\_size
+
+\subparagraph{Rx, +Ry}
+
+Ry += data\_size then EA = Rx + Ry
+
+\subparagraph{Rx, -Ry}
+
+Ry -= data\_size then EA = Rx + Ry
+
+
+\paragraph{Important notes : }
+\begin{itemize}
+    \item Every memory access has to be aligned. If not, a MAM interrupt is raised. 
+        \begin{itemize}
+            \item If a double-word is accessed, it must be aligned on double-word
+                (The least significant nibble is 0 or 8). 
+             \item if a word is accessed, it must be word aligned (the least significant nibble of
+                the address has to be either 0, 4, 8 or C). 
+            \item If it is a half-word, the address has to be even.
+            \item For a byte, every address can be accessed. 
+        \end{itemize}
+
+    \item The PC is a valid register for addressing. In addition, the PC is always word 
+        aligned. 
+
+    \item The endianess is little. 
+\end{itemize}
+
+\subsection{ALU operations}
+
+\paragraph{register mode : (rr)}
+\texttt{Rx, Ry [<< <left\_shift\_amount (4 bits)>]}
+
+S1 = Rx, S2 = Ry (left shifted by left\_shift\_amount)
+
+\paragraph{immediate mode : (rim)}
+\texttt{Rx, \#<immediate\_value>}
+
+S1 = Rx, S2 = immediate\_value (9 bits signed)
+
+\subsection{Branch operations}
+
+\paragraph{relative to register mode : (r)}
+offset
+
+PC = Rx + offset (14 bits signed left shifted by 2 --- 64 KiB range)
+
+\newpage
+\section{Instruction set}
+\subsection{Memory operations}
+
+\paragraph{LDW} --- Load double-word \newline
+Loads a double-word into a register from memory
+
+\paragraph{LWS} --- Load signed word \newline
+Loads a word into a register from memory
+Extends the sign bit.
+
+\paragraph{LWU} --- Load unsigned word\newline
+Loads a word into a register from memory
+Pads the most significant bits with 0.
+
+\paragraph{LHS} --- Load signed half-word \newline
+Loads a half-word into a register from memory
+Extends the sign bit.
+
+\paragraph{LHU} --- Load unsigned half-word\newline
+Loads a half-word into a register from memory
+Pads the most significant bits with 0.
+
+\paragraph{LBS} --- Load signed byte\newline
+Loads a byte into a register from memory
+Extends the sign bit.
+
+\paragraph{LBU} --- Load unsigned byte\newline
+Loads a byte into a register from memory
+Pads the most significant bits with 0.
+
+\paragraph{STD} --- Store double-word\newline
+Stores a double-word into the memory from a register 
+(will cause a LLD / SCD on the same address to fail)
+
+\paragraph{STW} --- Store word\newline
+Stores a word into the memory from a register 
+stores only the least 32 least significant bits
+(will cause a LLD / SCD on the same address to fail)
+
+\paragraph{STH} --- Store half-word\newline
+Stores a half-word into the memory from a register
+stores only the least 16 least significant bits
+(will cause a LLD / SCD on the same address to fail)
+
+\paragraph{STB} --- Store byte\newline
+Stores a byte into the memory from a register
+stores only the least 8 least significant bits
+(will cause a LLD / SCD on the same address to fail)
+
+\paragraph{Notes : }
+For all memory operations, the suffix S can be added to update the status
+
+\newpage
+\subsection{Atomic memory operations}
+
+\paragraph{LLD} --- load link double-word\newline
+Loads a double-word from memory to a register. The load address is
+stored in a hidden register, the load link register, and the dirty bit of this
+register is cleared. If a store occures on this address, the dirty bit will be
+set.
+
+\paragraph{SCD} --- store conditional double-word\newline
+Stores a double-word in memory from a register if the address of the target is
+in the load link register, and if the dirty bit is cleared. If V is set after
+the operation, the store has failed. Otherwise, it has succeeded. This
+operation will cause another LLD / SCD on the same address to fail. If the
+memory wasn't locked with LLD, the operation will fail. A core can't handle
+more than one LLD / SCD at a time.
+
+\paragraph{Notes : }
+For all memory operations, the suffix S can be added to update the status
+
+\subsection{Generic ALU operations}
+General syntax for the documentation :
+\newline
+General 3 operands form : \texttt{FOO D, S1, S2}
+
+\paragraph{ADD} --- Add\newline
+Does \newline D = S1 + S2
+
+\paragraph{SUB} --- Subtract\newline
+Does \newline D = S1 - S2
+
+\paragraph{AND} --- Bitwise and\newline
+Does \newline D = S1 \& S2
+
+\paragraph{ORR} --- Bitwise or\newline
+Does \newline D = S1 | S2
+
+\paragraph{EOR} --- Bitwise exclusive or\newline
+Does \newline D = S1 \textasciicircum S2
+
+\paragraph{ASL / LSL} --- Arithmetic shift left / Logical shift left S2 times\newline
+Does \newline D = S1 \textless \textless  S2
+\newline
+\texttt{C<-xxxx...xxxx<-0}
+
+\paragraph{ASR} --- Arithmetic shift right S2 times\newline
+Does \newline D = S1 \textgreater \textgreater  S2\newline  where S1 is signed
+\newline
+\texttt{+->xxxx...xxxx->C}\newline
+\texttt{|~~|             }\newline
+\texttt{+--+             }
+
+\paragraph{LSR} --- Logical shift right S2 times\newline
+Does \newline D = S1 \textgreater \textgreater  S2\newline  where S1 is unsigned
+\newline
+\texttt{0->xxxx...xxxx->C}
+
+\paragraph{ROL} --- rotate left S2 times\newline
+Does \newline D = S1 ROL S2\newline
+\texttt{+-xxxx...xxxx<-+->C}\newline
+\texttt{|~~~~~~~~~~~~~~|}\newline
+\texttt{+--------------+}
+
+\paragraph{ROR} --- rotate right S2 times\newline
+Does \newline D = S1 ROR S2\newline
+\texttt{+->xxxx...xxxx-+->C}\newline
+\texttt{|~~~~~~~~~~~~~~|}\newline
+\texttt{+--------------+}
+
+\paragraph{MUL} --- Multiply\newline
+Does \newline D = S1 * S2 \newline
+\textbf{Warning : } only the 32 least significant bits of the operands 
+are multiplied together to give a 64 bits result. 
+
+\paragraph{Notes : }
+For all ALU operations, the suffix S can be added to update the status
+
+\subsection{Carried ALU operations}
+
+\paragraph{ADC} --- Add with carry\newline
+Does \newline D = S1 + S2 + C\newline  where C is 1 if the carry is set, 0 otherwise
+
+\paragraph{SBC} --- Subtract with borrow\newline
+Does \newline D = S1 - S2 + C - 1\newline  where C is 1 if the carry is set, 0 otherwise
+
+\paragraph{RLC} --- rotate left through carry S2 times\newline
+Does \newline D = S1 RLC S2\newline
+\texttt{C<-xxxx...xxxx<-C}
+
+\paragraph{RRC} --- rotate right through carry S2 times\newline
+Does \newline D = S1 RRC S2\newline
+\texttt{C->xxxx...xxxx->C}
+
+\paragraph{Notes : }
+For all ALU operations, the suffix S can be added to update the status
+
+\newpage
+\subsection{SIMD ALU operations}
+
+For all SIMD operations, if S2 is immediate, then each S2 word, half-word or byte
+will be the same. E.g : \newline
+This : \newline
+\texttt{ADDH R3, R3, \#-3}\newline
+Is the same as this : \newline
+\texttt{ADDH R3, R3, R4 ; if R4 = \$FFFDFFFD FFFDFFFD}\newline
+
+\subsubsection{SIMD add}
+
+\paragraph{ADDD} --- Add double-words (is the same as ADD)\newline
+
+\paragraph{ADDW} --- Add words\newline
+Adds S1 and S2 to D, but doesn't carry the bit 31.
+
+\paragraph{ADDH} --- Add half-words\newline
+Adds S1 and S2 to D, but doesn't carry the bits 47, 31 and 15.
+
+\paragraph{ADDB} --- Add bytes\newline
+Adds S1 and S2 to D, but doesn't carry for the bits 55, 47, 39, 31, 23, 15 and
+7.
+
+\subsubsection{SIMD subtract}
+
+\paragraph{SUBD} --- Subtract double-words (is the same as SUB)\newline
+
+\paragraph{SUBW} --- Subtract words\newline
+Subtracts S1 and S2 to D, but doesn't carry the bit 31.
+
+\paragraph{SUBH} --- Subtract half-words\newline
+Subtracts S1 and S2 to D, but doesn't carry the bits 47, 31 and 15.
+
+\paragraph{SUBB} --- Subtract bytes\newline
+Subtracts S1 and S2 to D, but doesn't carry for the bits 55, 47, 39, 31, 23, 15
+and 7.
+
+\subsubsection{SIMD arithmetical or logical shift left}
+
+\paragraph{ASLD} --- Shift double-words (is the same as ASL)\newline
+
+\paragraph{ASLW} --- Shift words\newline
+Shifts S1 and S2 to D, but doesn't carry the bit 31.
+
+\paragraph{ASLH} --- Shift half-words\newline
+Shifts S1 and S2 to D, but doesn't carry the bits 47, 31 and 15.
+
+\paragraph{ASLB} --- Shift bytes\newline
+Shifts S1 and S2 to D, but doesn't carry for the bits 55, 47, 39, 31, 23, 15
+and 7.
+
+\subsubsection{SIMD arithmetical shift right}
+
+\paragraph{ASRD} --- Shift double-words (is the same as ASR)\newline
+
+\paragraph{ASRW} --- Shift words\newline
+Shifts S1 and S2 to D, but doesn't carry to the bit 31.
+
+\paragraph{ASRH} --- Shift half-words\newline
+Shifts S1 and S2 to D, but doesn't carry the bits 47, 31 and 15.
+
+\paragraph{ASRB} --- Shift bytes\newline
+Shifts S1 and S2 to D, but doesn't carry for the bits 55, 47, 39, 31, 23, 15
+and 7.
+
+\subsubsection{SIMD logical shift right}
+
+\paragraph{LSRD} --- Shift double-words (is the same as LSR)\newline
+
+\paragraph{LSRW} --- Shift words\newline
+Shifts S1 and S2 to D, but doesn't carry to the bit 31.
+
+\paragraph{LSRH} --- Shift half-words\newline
+Shifts S1 and S2 to D, but doesn't carry the bits 47, 31 and 15.
+
+\paragraph{LSRB} --- Shift bytes\newline
+Shifts S1 and S2 to D, but doesn't carry for the bits 55, 47, 39, 31, 23, 15
+and 7.
+
+\subsubsection{SIMD rotate left}
+
+\paragraph{ROLD} --- Shift double-words (is the same as ROL)\newline
+
+\paragraph{ROLW} --- Shift words\newline
+Shifts S1 and S2 to D, but wrap around bit 63 to bit 32 and bit 31 to bit 0.
+
+\paragraph{ROLH} --- Shift half-words\newline
+Shifts S1 and S2 to D, but wrap around bit 63 to bit 48, bit 47 to bit 32, bit
+31 to bit 16 and bit 15 to bit 0.
+
+\paragraph{ROLB} --- Shift bytes\newline
+Shifts S1 and S2 to D, but wrap around bit 63 to bit 56, bit 55 to bit 48, bit
+47 to bit 40, bit 39 to bit 32, bit 31 to bit 24, bit 23 to bit 16, and bit 15
+to bit 8, and bit 7 to bit 0.
+
+\subsubsection{SIMD rotate right}
+
+\paragraph{RORD} --- Shift double-words (is the same as ROR)\newline
+
+\paragraph{RORW} --- Shift words\newline
+Shifts S1 and S2 to D, but wrap around bit 32 to bit 63 and bit 0 to bit 31.
+
+\paragraph{RORH} --- Shift half-words\newline
+Shifts S1 and S2 to D, but wrap around bit 48 to bit 63, bit 32 to bit 47, bit
+16 to bit 31 and bit 0 to bit 15.
+
+\paragraph{RORB} --- Shift bytes\newline
+Shifts S1 and S2 to D, but but wrap around bit 56 to bit 63, bit 48 to bit 55,
+bit 40 to bit 47, bit 32 to bit 39, bit 24 to bit 31, bit 16 to bit 23, and bit
+8 to bit 15, and bit 0 to bit 7.
+
+\subsubsection{SIMD sum}
+
+\paragraph{SUMW} --- And words\newline
+Sums each word of S2 then adds it S1 to D.
+
+\paragraph{SUMH} --- And half-words\newline
+Sums each half-word of S2 then adds it S1 to D.
+
+\paragraph{SUMB} --- And bytes\newline
+Sums each byte of S2 then adds it S1 to D.
+
+\paragraph{Notes : }
+\begin{itemize}
+    \item For all SIMD ALU operations, the suffix S can be added to update the status. 
+        However, these are pointless because it works the same way for double-words.
+    \item For the SIMD barrel shifting operations, each shift amount are independents. 
+\end{itemize}
+
+\subsection{Branch instructions}
+
+\paragraph{BAL} --- branch always\newline
+Add a displacement to the PC.
+
+\paragraph{BEQ} --- branch on equal\newline
+The branch is taken if Z is set
+
+\paragraph{BNE} --- branch on not equal\newline
+The branch is taken if Z is cleared
+
+\paragraph{BMI} --- branch on minus\newline
+The branch is taken if N is set
+
+\paragraph{BPL} --- branch on plus\newline
+The branch is taken if N is cleared
+
+\paragraph{BVS} --- branch on overflow set\newline
+The branch is taken if V is set
+
+\paragraph{BVC} --- branch on overflow cleared\newline
+The branch is taken if V is cleared
+
+\paragraph{BCS / BHQ} --- branch on carry set / branch on higher than or equal
+(Unsigned)\newline
+The branch is taken if C is set
+
+\paragraph{BCC / BLO} --- branch on carry cleared / branch on lower than
+(Unsigned)\newline
+The branch is taken if C is cleared
+
+\paragraph{BHI} --- branch on higher than (Unsigned)\newline
+The branch is taken if H is set
+
+\paragraph{BLQ} --- branch on lower or equal (Unsigned)\newline
+The branch is taken if H is cleared
+
+\paragraph{BGT} --- branch on greater than (Signed)\newline
+The branch is taken if G is set
+
+\paragraph{BLE} --- branch on less than or equal (Signed)\newline
+The branch is taken if G is cleared
+
+\paragraph{BGE} --- branch on greater than or equal (Signed)\newline
+The branch is taken if g is set
+
+\paragraph{BLT} --- branch on less than (Signed)\newline
+The branch is taken if g is cleared
+
+\paragraph{BLK} --- branch and link\newline
+This instruction branches then saves the old PC to LR. \newline
+The purpose of this instruction is to branch to a subroutine. 
+
+\subsection{Conditional codes instructions}
+
+\paragraph{TCR} --- transfer conditional codes to register\newline
+This instruction transfers the conditional codes byte to a register. \newline
+
+\paragraph{TRC} --- transfer register to conditional codes\newline
+This instruction transfers a register to the conditional codes byte. \newline
+
+\subsection{Status instructions (privileged)}
+
+\paragraph{TSR} --- transfer status to register\newline
+This instruction transfers the whole status word to a register. \newline
+This instruction will raise an ILG interrupt if it is executed in user mode.
+
+\paragraph{TRS} --- transfer register to status\newline
+This instruction transfers a register to the whole status word. \newline
+This instruction will raise an ILG interrupt if it is executed in user mode.
+
+\paragraph{RTI} --- return from interrupt\newline
+The purpose of this instruction is to end an interrupt servicing routine and 
+return to the application program. It copies the LRi register into the PC and
+transfers back the saved status to the current status. \newline
+This instruction will raise an ILG interrupt if it is executed in user mode.
+
+\subsection{Software interrupts}
+
+\paragraph{SYS} --- system call (software interrupt)\newline
+Interrupts the processor to execute the system call interrupt handler
+
+\paragraph{ILG} --- Illegal instruction\newline
+Interrupts the processor to execute the illegal instruction interrupt handler
+
+\subsection{conditional prefix}
+A conditional prefix can be added to all instructions.
+
+\paragraph{AL.} --- Always (equivalent to no prefix) \newline
+Always executed.
+
+\paragraph{EQ.} --- Equal\newline
+Executed if Z is set. 
+
+\paragraph{NE.} --- Non-equal\newline
+Executed if Z is cleared. 
+
+\paragraph{MI.} --- Minus\newline
+Executed if N is set. 
+
+\paragraph{PL.} --- Plus\newline
+Executed if N is cleared. 
+
+\paragraph{VS.} --- Overflow set\newline
+Executed if V is set. 
+
+\paragraph{VC.} --- Overflow cleared\newline
+Executed if V is cleared. 
+
+\paragraph{CS. / HQ.} --- carry set / higher or equal (unsigned)\newline
+Executed if C is set. 
+
+\paragraph{CC. / LO.} --- carry cleared / lower than (unsigned)\newline
+Executed if C is cleared. 
+
+\paragraph{HI.} --- higher than (unsigned)\newline
+Executed if H is set. 
+
+\paragraph{LQ.} --- lower than or equal (unsigned)\newline
+Executed if H is cleared. 
+
+\paragraph{GT.} --- greater than\newline
+Executed if G is set. 
+
+\paragraph{LE.} --- less than or equal\newline
+Executed if G is cleared. 
+
+\paragraph{GE.} --- greater than or equal\newline
+Executed if g is set. 
+
+\paragraph{LT.} --- less than\newline
+Executed if g is cleared. 
+
+\subsection{Meta-instructions}
+
+\paragraph{MOV} --- move data\newline
+Alias of \texttt{ADD <Rd> , R0, <Rx|\#immediate\_value> }
+
+\paragraph{MVN} --- move negative\newline
+Alias of \texttt{SUB <Rd> , R0, <Rx|\#immediate\_value> }
+
+\paragraph{NOT} --- move 1st complement\newline
+Alias of \texttt{EOR <Rd> , <Rx> , \#-1}
+
+\paragraph{CMP} --- compare\newline
+Alias of \texttt{SUBS R0, <Rx> , <Ry|\#immediate\_value> }
+
+\paragraph{CMN} --- compare negative\newline
+Alias of \texttt{ADDS R0, <Rx> , <Ry|\#immediate\_value> }
+
+\paragraph{BIT} --- test bits\newline
+Alias of \texttt{ANDS R0, <Rx> , <Ry|\#immediate\_value> }
+
+\paragraph{NOP} --- the traditional No OPeration\newline
+Alias of \texttt{ADD R0, R0, R0}
+
+\paragraph{PSH} --- push onto the stack\newline
+Alias of \texttt{STD <Rd>, -R30}
+
+\paragraph{PLL} --- pull from the stack\newline
+Alias of \texttt{LDW <Rd>, R30+}
+
+\paragraph{RTS} --- return from subroutine\newline
+Alias of \texttt{MOV PC, LR}
+
+\paragraph{Note : }
+
+Like ALU operations, the suffix S can be added to update the status
+
+\newpage
+\section{Assembler syntax}
+\subsection{Memory operations}
+Rd is the register source in case of a store, Rd is the destination register
+in case of a load. The next values are for the addressing mode.
+options between \textless \textgreater mean required, options between [] mean optional
+\begin{itemize}
+    \item \texttt{d : FOO <Rd>, <offset(15 bits)> }
+    \item \texttt{i : FOO <Rd>, <Rx> [, offset(11 bits)] }
+    \item \texttt{bi: FOO <Rd>, <Rx>, <Ry> [, shift(6 bits)]}
+    \item \texttt{ai: FOO <Rd>, <Rx>+}
+    \item \texttt{ai: FOO <Rd>, <Rx>-}
+    \item \texttt{ai: FOO <Rd>, +<Rx>}
+    \item \texttt{ai: FOO <Rd>, -<Rx>}
+\end{itemize}
+\subsection{ALU operations}
+Rd is the destination register. The next values are for the addressing mode.
+Options between \textless \textgreater mean required, options between [] mean
+optional
+
+\begin{itemize}
+    \item \texttt{rr : FOO <Rd>, <Rx>, <Ry> [<LSL|ASL|ROL|LSR|ASR|ROR>
+        <shift\_amount>]}
+    \item \texttt{rim: FOO <Rd>, <Rx>, \#<immediate\_value(12
+        bits)>}
+\end{itemize}
+General syntax for the documentation :
+\newline
+General form : \texttt{FOO D, S1, S2}
+
+\subsection{Branch operations}
+The values are for the addressing mode.
+Options between \textless \textgreater mean required, options between [] mean
+optional
+For 3 operands : 
+\begin{itemize}
+    \item \texttt{i : BAR <Rx> [, offset]}
+    \item \texttt{i : BAR [PC,] <offset>}
+\end{itemize}
+\subsection{Status instructions and conditional codes instructions}
+
+Rd is the destination for TSR and TCR, and Rd is the source for TRS and TCR.
+RTI does not have any addressing mode.
+\begin{itemize}
+    \item \texttt{implied : TRC <Rd>}
+    \item \texttt{implied : TCR <Rd>}
+    \item \texttt{implied : TRS <Rd>}
+    \item \texttt{implied : TSR <Rd>}
+    \item \texttt{none : RTI }
+\end{itemize}
+
+\subsection{Software interrupts}
+
+Software interrupts don't have any addressing mode. 
+However, a 19 bits numeric constant can be added to a SYS opcode. 
+\begin{itemize}
+    \item \texttt{none : SYS [\#constant]}
+    \item \texttt{none : ILG }
+\end{itemize}
+
+\end{document}
