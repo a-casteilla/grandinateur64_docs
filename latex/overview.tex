@@ -4,7 +4,7 @@
 
 \author{Aurélien Casteilla}
 \date{26-04-2021}
-\title{Spiderchip64}
+\title{Mansion64}
 
 \begin{document}
 \pagenumbering{gobble}
@@ -15,11 +15,11 @@
 \newpage
 
 \paragraph{}
-        Spiderchip64 is a 64 bits little endian ISA. This ISA tries to apply
+        Mansion64 is a 64 bits little endian ISA. This ISA tries to apply
         the KISS principle and also tries to respect the Popek and Goldberg
         virtualization requirement. Also, this CPU will include atomic memory
-        operation for a multi-core version. So Spiderchip64 is a RISC ISA.
-        Spiderchip64 has a 64 bits-wide data bus, a 64 bits-wide address bus,
+        operation for a multi-core version. So Mansion64 is a RISC ISA.
+        Mansion64 has a 64 bits-wide data bus, a 64 bits-wide address bus,
         two sets of 31 64 bits-wide registers for a total of 47 registers, plus
         a zero register.  There is also a status register and a saved status
         register. One set of register is used by the user's program and the
@@ -48,17 +48,22 @@
 \end{itemize}
 \section{Notes :}
 \begin{itemize}
-    \item This ISA is intended to be implemented the first time on a FPGA
-        development board (Arduino MKR Vidor 4000, with an Intel Cyclone 10)
+    \item First, this ISA will be implemented on an emulator that runs on Linux
+        (and maybe other *nix). This ISA is intended to be implemented on
+        hardware the first time on a FPGA development board (Arduino MKR Vidor
+        4000, with an Intel Cyclone 10) The final goal is to make a
+        mini-computer implementation of this ISA.
 
-    \item I am aware that Intel Quartus is not free software. I am searching a
-        FOSS FPGA "compiler" and FOSS-friendly FPGA board
+    \item I am aware that Intel Quartus is not free software.
 
     \item This is just an ISA for the CPU part of a computer. So it doesn't
         have and doesn't specify a MMU, a FPU, a GPU, a cache, a PIC, or an I/O
         controller. However, some of these elements will be on the FPGA SoC.
 
-    \item In the first version of this ISA, there won't be double instructions.
+    \item I named it "Mansion64" because a mini-computer is really big and you
+        will need a castle or a mansion for it (don't worry, I'm kidding). 64
+        because it's a 64 bits architecture. Also "Mansion" because this is a
+        freak and uncanny architecture.
 
 \end{itemize}
 \section{Glossary of the acronyms :}
@@ -71,10 +76,10 @@
 \paragraph{I/O : }Input / Output
 \paragraph{ISA : }Instruction Set Architecture
 \paragraph{KISS : }Keep It Simple Stupid
-\paragraph{MIMD : }Multiple Instruction Multiple Data 
 \paragraph{MMU : }Memory Management Unit
 \paragraph{PIC : }Programmable Interrupt Controller
 \paragraph{RISC : }Reduced Instruction Set Computing
+\paragraph{SIMD : }Single Instruction Multiple Data 
 \paragraph{SoC : }System On Chip
 
 \section{}
